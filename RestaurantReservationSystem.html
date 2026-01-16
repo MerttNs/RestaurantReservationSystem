@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Restoran Rezervasyon Sistemi</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#0f1833;
+      --muted:#a8b3cf;
+      --text:#eef2ff;
+      --line:rgba(255,255,255,.10);
+      --accent:#7c3aed;
+      --accent2:#22c55e;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --shadow: 0 12px 40px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 700px at 20% 0%, rgba(124,58,237,.25), transparent 55%),
+                  radial-gradient(900px 600px at 90% 20%, rgba(34,197,94,.18), transparent 55%),
+                  linear-gradient(180deg, #070a14, var(--bg));
+      color:var(--text);
+      min-height:100vh;
+    }
+    a{ color:inherit; }
+    .container{ max-width:1100px; margin:0 auto; padding:28px 16px 60px; }
+    .topbar{
+      display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+    .brand{
+      display:flex; gap:12px; align-items:center;
+    }
+    .logo{
+      width:44px; height:44px; border-radius:14px;
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(34,197,94,.85));
+      box-shadow: var(--shadow);
+    }
+    h1{ font-size:20px; margin:0; letter-spacing:.2px; }
+    .sub{ color:var(--muted); font-size:13px; margin-top:2px; }
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      transition:.18s transform, .18s background, .18s border;
+      user-select:none;
+    }
+    .btn:hover{ background: rgba(255,255,255,.10); transform: translateY(-1px); border-color: rgba(255,255,255,.16); }
+    .btn.primary{ background: rgba(124,58,237,.22); border-color: rgba(124,58,237,.35); }
+    .btn.primary:hover{ background: rgba(124,58,237,.28); }
+    .btn.green{ background: rgba(34,197,94,.18); border-color: rgba(34,197,94,.30); }
+    .btn.danger{ background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.30); }
+    .pill{
+      font-size:12px; color:var(--muted);
+      border:1px solid var(--line);
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.05);
+      display:flex; gap:10px; align-items:center;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+      margin-top:14px;
+    }
+    @media (max-width: 960px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .cardHead{
+      padding:16px 16px 12px;
+      display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(0,0,0,.10);
+    }
+    .cardTitle{
+      display:flex; flex-direction:column; gap:6px;
+    }
+    .cardTitle h2{ margin:0; font-size:15px; }
+    .cardTitle p{ margin:0; font-size:12px; color:var(--muted); line-height:1.35; }
+    .cardBody{ padding:16px; }
+    .row{ display:flex; gap:12px; flex-wrap:wrap; }
+    .field{
+      flex:1 1 180px;
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+      margin-bottom:12px;
+    }
+    label{ font-size:12px; color:var(--muted); }
+    input, select, textarea{
+      width:100%;
+      padding:11px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      outline:none;
+    }
+    textarea{ min-height:90px; resize:vertical; }
+    input:focus, select:focus, textarea:focus{ border-color: rgba(124,58,237,.55); box-shadow: 0 0 0 4px rgba(124,58,237,.12); }
+    .hint{
+      font-size:12px; color: var(--muted); margin-top:-6px; margin-bottom:10px;
+    }
+    .status{
+      display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+      font-size:12px; color:var(--muted);
+    }
+    .badge{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      display:inline-flex; gap:7px; align-items:center;
+    }
+    .badge.ok{ border-color: rgba(34,197,94,.28); background: rgba(34,197,94,.12); }
+    .badge.warn{ border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); }
+    .badge.bad{ border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.12); }
+    .hr{ height:1px; background: var(--line); margin:14px 0; }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .item{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      background: rgba(0,0,0,.18);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .itemMain{
+      display:flex; flex-direction:column; gap:6px;
+      min-width: 0;
+    }
+    .itemTop{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+    }
+    .name{ font-weight:650; font-size:14px; }
+    .meta{ color:var(--muted); font-size:12px; display:flex; gap:10px; flex-wrap:wrap; }
+    .meta span{ opacity:.95; }
+    .note{
+      color: rgba(238,242,255,.92);
+      font-size:12px;
+      line-height:1.35;
+      opacity:.92;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .itemBtns{ display:flex; gap:8px; align-items:center; }
+    .iconBtn{
+      width:38px; height:38px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      cursor:pointer;
+      display:grid; place-items:center;
+      transition:.18s transform, .18s background;
+    }
+    .iconBtn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.10); }
+    .icon{ font-size:16px; }
+
+    .empty{
+      padding:18px;
+      border:1px dashed rgba(255,255,255,.18);
+      border-radius:16px;
+      color:var(--muted);
+      font-size:13px;
+      background: rgba(0,0,0,.12);
+    }
+
+    /* Modal */
+    .modalOverlay{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.62);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:50;
+    }
+    .modal{
+      width:min(560px, 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.04));
+      border:1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modalHead{
+      padding:14px 16px;
+      display:flex; justify-content:space-between; align-items:center;
+      border-bottom:1px solid var(--line);
+      background: rgba(0,0,0,.10);
+    }
+    .modalHead h3{ margin:0; font-size:14px; }
+    .closeX{
+      border:none; background:transparent; color:var(--muted);
+      cursor:pointer; font-size:20px; line-height:1;
+      padding:6px 10px; border-radius:12px;
+    }
+    .closeX:hover{ background: rgba(255,255,255,.08); color: var(--text); }
+    .modalBody{ padding:16px; }
+    .toast{
+      position:fixed;
+      right:16px; bottom:16px;
+      background: rgba(15,24,51,.92);
+      border:1px solid var(--line);
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:16px;
+      box-shadow: var(--shadow);
+      display:none;
+      max-width:min(420px, calc(100vw - 32px));
+      z-index:60;
+      font-size:13px;
+      line-height:1.35;
+    }
+    .toast strong{ display:block; margin-bottom:4px; }
+    .kbd{
+      font-size:11px;
+      padding:2px 7px;
+      border-radius:8px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+    }
+    .footerNote{
+      margin-top:14px;
+      color: rgba(168,179,207,.85);
+      font-size:12px;
+      line-height:1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>Restoran Rezervasyon Sistemi</h1>
+          <div class="sub">Rezervasyon al • kapasiteyi kontrol et • kayıtları sakla (LocalStorage)</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <div class="pill" id="capacityPill">🪑 Kapasite: <strong id="capText">—</strong></div>
+        <button class="btn primary" id="openAdmin">⚙️ Admin</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Left: Form -->
+      <div class="card">
+        <div class="cardHead">
+          <div class="cardTitle">
+            <h2>Yeni Rezervasyon</h2>
+            <p>Aynı tarih + saat için toplam kişi sayısı kapasiteyi aşarsa sistem izin vermez.</p>
+          </div>
+          <div class="status">
+            <span class="badge" id="dayBadge">📅 <span id="todayText"></span></span>
+            <span class="badge" id="countBadge">📌 <span id="todayCount">0</span> rezervasyon</span>
+          </div>
+        </div>
+
+        <div class="cardBody">
+          <form id="resForm" autocomplete="off">
+            <div class="row">
+              <div class="field">
+                <label>Ad Soyad</label>
+                <input id="name" required placeholder="Örn: Mustafa Pirgon" />
+              </div>
+              <div class="field">
+                <label>Telefon</label>
+                <input id="phone" inputmode="tel" placeholder="Örn: 05xx xxx xx xx" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label>Tarih</label>
+                <input id="date" type="date" required />
+              </div>
+              <div class="field">
+                <label>Saat</label>
+                <select id="time" required></select>
+              </div>
+              <div class="field">
+                <label>Kişi Sayısı</label>
+                <input id="people" type="number" min="1" max="50" required value="2" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Not (opsiyonel)</label>
+              <textarea id="note" placeholder="Örn: Cam kenarı rica ederiz, doğum günü..."></textarea>
+            </div>
+
+            <div class="hint" id="capacityHint">—</div>
+
+            <div class="row">
+              <button class="btn green" type="submit">✅ Rezervasyonu Kaydet</button>
+              <button class="btn" type="button" id="resetForm">↩️ Temizle</button>
+            </div>
+
+            <div class="footerNote">
+              İpucu: Bugünün rezervasyonlarını görmek için sağdaki listede <span class="kbd">Tarih</span> filtresini kullanabilirsin.
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right: List + Filters -->
+      <div class="card">
+        <div class="cardHead">
+          <div class="cardTitle">
+            <h2>Rezervasyonlar</h2>
+            <p>Filtrele, düzenle veya sil. Kayıtlar tarayıcıda saklanır.</p>
+          </div>
+          <button class="btn" id="exportBtn">⬇️ JSON Dışa Aktar</button>
+        </div>
+
+        <div class="cardBody">
+          <div class="row">
+            <div class="field" style="flex:1 1 160px;">
+              <label>Filtre Tarih</label>
+              <input id="filterDate" type="date" />
+            </div>
+            <div class="field" style="flex:1 1 160px;">
+              <label>Filtre Saat</label>
+              <select id="filterTime"></select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field" style="flex:1 1 220px;">
+              <label>Ara (ad / telefon / not)</label>
+              <input id="q" placeholder="Örn: doğum günü, 0532..." />
+            </div>
+            <div class="field" style="flex:0 0 160px;">
+              <label>&nbsp;</label>
+              <button class="btn" id="clearFilters" type="button">🧹 Filtreleri Temizle</button>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div id="list" class="list"></div>
+          <div id="empty" class="empty" style="display:none;">Henüz rezervasyon yok. Soldan yeni bir rezervasyon ekleyebilirsin.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Modal -->
+  <div class="modalOverlay" id="modalOverlay" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modalHead">
+        <h3>Admin Ayarları</h3>
+        <button class="closeX" id="closeAdmin" aria-label="Kapat">×</button>
+      </div>
+      <div class="modalBody">
+        <div class="row">
+          <div class="field">
+            <label>Masa Toplam Kapasitesi (aynı tarih+saat toplam kişi)</label>
+            <input id="capInput" type="number" min="1" max="300" />
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn primary" id="saveCap" type="button">💾 Kaydet</button>
+          <button class="btn danger" id="deleteAll" type="button">🗑️ Tüm Rezervasyonları Sil</button>
+        </div>
+
+        <div class="footerNote">
+          Kapasite kontrolü: Aynı <b>tarih + saat</b> için toplam kişi sayısı kapasiteyi geçemez.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    /***************
+     * Basit Rezervasyon Sistemi (LocalStorage)
+     ***************/
+    const LS_KEY = "rrs_reservations_v1";
+    const LS_CAP = "rrs_capacity_v1";
+    const DEFAULT_CAP = 30;
+
+    const $ = (id) => document.getElementById(id);
+
+    const form = $("resForm");
+    const listEl = $("list");
+    const emptyEl = $("empty");
+
+    const nameEl = $("name");
+    const phoneEl = $("phone");
+    const dateEl = $("date");
+    const timeEl = $("time");
+    const peopleEl = $("people");
+    const noteEl = $("note");
+
+    const filterDateEl = $("filterDate");
+    const filterTimeEl = $("filterTime");
+    const qEl = $("q");
+
+    const capText = $("capText");
+    const capInput = $("capInput");
+    const capacityHint = $("capacityHint");
+
+    const todayText = $("todayText");
+    const todayCountEl = $("todayCount");
+    const countBadge = $("countBadge");
+
+    const modalOverlay = $("modalOverlay");
+
+    function todayISO(){
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function formatDateTR(iso){
+      if(!iso) return "";
+      const [y,m,d] = iso.split("-");
+      return `${d}.${m}.${y}`;
+    }
+
+    function safeId(){
+      return Math.random().toString(16).slice(2) + Date.now().toString(16);
+    }
+
+    function loadReservations(){
+      try{
+        return JSON.parse(localStorage.getItem(LS_KEY)) || [];
+      }catch{
+        return [];
+      }
+    }
+
+    function saveReservations(items){
+      localStorage.setItem(LS_KEY, JSON.stringify(items));
+    }
+
+    function loadCapacity(){
+      const v = Number(localStorage.getItem(LS_CAP));
+      return Number.isFinite(v) && v > 0 ? v : DEFAULT_CAP;
+    }
+
+    function saveCapacity(v){
+      localStorage.setItem(LS_CAP, String(v));
+    }
+
+    function buildTimeOptions(start="12:00", end="23:00", stepMin=30){
+      // HH:MM -> list
+      const [sh, sm] = start.split(":").map(Number);
+      const [eh, em] = end.split(":").map(Number);
+      const startM = sh*60 + sm;
+      const endM = eh*60 + em;
+      const times = [];
+      for(let m = startM; m <= endM; m += stepMin){
+        const hh = String(Math.floor(m/60)).padStart(2,"0");
+        const mm = String(m%60).padStart(2,"0");
+        times.push(`${hh}:${mm}`);
+      }
+      return times;
+    }
+
+    function fillTimeSelects(){
+      const times = buildTimeOptions("12:00","23:00",30);
+
+      timeEl.innerHTML = "";
+      for(const t of times){
+        const opt = document.createElement("option");
+        opt.value = t; opt.textContent = t;
+        timeEl.appendChild(opt);
+      }
+
+      filterTimeEl.innerHTML = "";
+      const any = document.createElement("option");
+      any.value = ""; any.textContent = "Tümü";
+      filterTimeEl.appendChild(any);
+
+      for(const t of times){
+        const opt = document.createElement("option");
+        opt.value = t; opt.textContent = t;
+        filterTimeEl.appendChild(opt);
+      }
+    }
+
+    function normalize(str){
+      return (str || "").toString().toLowerCase().trim();
+    }
+
+    function toast(title, msg){
+      const t = $("toast");
+      t.innerHTML = `<strong>${escapeHtml(title)}</strong>${escapeHtml(msg)}`;
+      t.style.display = "block";
+      clearTimeout(toast._tm);
+      toast._tm = setTimeout(()=> t.style.display="none", 3200);
+    }
+
+    function escapeHtml(s){
+      return (s ?? "").toString()
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function sumPeopleSameSlot(reservations, date, time, excludeId=null){
+      return reservations
+        .filter(r => r.date === date && r.time === time && r.id !== excludeId)
+        .reduce((acc, r) => acc + Number(r.people || 0), 0);
+    }
+
+    function updateCapacityUI(){
+      const cap = loadCapacity();
+      capText.textContent = cap;
+      capInput.value = cap;
+      updateCapacityHint();
+    }
+
+    function updateCapacityHint(){
+      const cap = loadCapacity();
+      const reservations = loadReservations();
+      const date = dateEl.value;
+      const time = timeEl.value;
+      const wanted = Number(peopleEl.value || 0);
+
+      if(!date || !time || !wanted){
+        capacityHint.textContent = `Kapasite: ${cap}. Tarih/saat/kişi seçince uygunluk görünür.`;
+        return;
+      }
+      const already = sumPeopleSameSlot(reservations, date, time);
+      const remaining = cap - already;
+
+      if(wanted <= remaining){
+        capacityHint.innerHTML = `✅ <b>${formatDateTR(date)} ${time}</b> için doluluk: <b>${already}/${cap}</b>. Kalan: <b>${remaining}</b>.`;
+      }else{
+        capacityHint.innerHTML = `⚠️ <b>${formatDateTR(date)} ${time}</b> için doluluk: <b>${already}/${cap}</b>. Kalan: <b>${remaining}</b>. Seçtiğin <b>${wanted}</b> kişi kapasiteyi aşıyor.`;
+      }
+    }
+
+    function setTodayBadges(){
+      const t = todayISO();
+      todayText.textContent = formatDateTR(t);
+      const reservations = loadReservations();
+      const todayCount = reservations.filter(r => r.date === t).length;
+      todayCountEl.textContent = todayCount;
+      countBadge.className = "badge " + (todayCount === 0 ? "" : "ok");
+    }
+
+    function applyFilters(items){
+      const fd = filterDateEl.value;
+      const ft = filterTimeEl.value;
+      const q = normalize(qEl.value);
+
+      let out = [...items];
+      if(fd) out = out.filter(r => r.date === fd);
+      if(ft) out = out.filter(r => r.time === ft);
+
+      if(q){
+        out = out.filter(r => {
+          const hay = normalize(r.name) + " " + normalize(r.phone) + " " + normalize(r.note);
+          return hay.includes(q);
+        });
+      }
+
+      // Date asc, time asc
+      out.sort((a,b)=>{
+        const da = a.date.localeCompare(b.date);
+        if(da !== 0) return da;
+        return a.time.localeCompare(b.time);
+      });
+      return out;
+    }
+
+    function render(){
+      const items = loadReservations();
+      setTodayBadges();
+      updateCapacityUI();
+
+      const filtered = applyFilters(items);
+      listEl.innerHTML = "";
+
+      if(filtered.length === 0){
+        emptyEl.style.display = "block";
+        return;
+      }
+      emptyEl.style.display = "none";
+
+      const cap = loadCapacity();
+
+      for(const r of filtered){
+        const slotTotal = sumPeopleSameSlot(items, r.date, r.time);
+        const fullness = slotTotal / cap;
+        const badgeClass = fullness <= 0.65 ? "ok" : (fullness <= 0.9 ? "warn" : "bad");
+
+        const el = document.createElement("div");
+        el.className = "item";
+        el.innerHTML = `
+          <div class="itemMain">
+            <div class="itemTop">
+              <span class="name">${escapeHtml(r.name)}</span>
+              <span class="badge ${badgeClass}">🕒 ${escapeHtml(r.time)} • 👥 ${escapeHtml(String(r.people))}</span>
+              <span class="badge">📅 ${escapeHtml(formatDateTR(r.date))}</span>
+            </div>
+            <div class="meta">
+              <span>📞 ${escapeHtml(r.phone || "—")}</span>
+              <span>🪑 Slot Doluluk: ${escapeHtml(String(slotTotal))}/${escapeHtml(String(cap))}</span>
+            </div>
+            ${r.note ? `<div class="note">${escapeHtml(r.note)}</div>` : ``}
+          </div>
+          <div class="itemBtns">
+            <button class="iconBtn" title="Düzenle" data-act="edit" data-id="${escapeHtml(r.id)}"><span class="icon">✏️</span></button>
+            <button class="iconBtn" title="Sil" data-act="del" data-id="${escapeHtml(r.id)}"><span class="icon">🗑️</span></button>
+          </div>
+        `;
+        listEl.appendChild(el);
+      }
+    }
+
+    function resetForm(){
+      nameEl.value = "";
+      phoneEl.value = "";
+      noteEl.value = "";
+      peopleEl.value = "2";
+      dateEl.value = todayISO();
+      timeEl.value = timeEl.options[0]?.value || "";
+      form.dataset.editing = "";
+      form.dataset.editId = "";
+      $("submitText")?.remove();
+      updateCapacityHint();
+    }
+
+    function setSubmitText(text){
+      // Small helper to show editing mode (optional)
+      let tag = $("submitText");
+      if(!tag){
+        tag = document.createElement("div");
+        tag.id = "submitText";
+        tag.style.marginTop = "10px";
+        tag.style.color = "rgba(168,179,207,.95)";
+        tag.style.fontSize = "12px";
+        form.appendChild(tag);
+      }
+      tag.textContent = text || "";
+      if(!text) tag.remove();
+    }
+
+    function openAdmin(){
+      modalOverlay.style.display = "flex";
+      capInput.focus();
+    }
+    function closeAdmin(){
+      modalOverlay.style.display = "none";
+    }
+
+    /***************
+     * Event Listeners
+     ***************/
+    fillTimeSelects();
+
+    // default values
+    dateEl.value = todayISO();
+    filterDateEl.value = todayISO();
+
+    // update on change
+    [dateEl, timeEl, peopleEl].forEach(el => el.addEventListener("input", updateCapacityHint));
+    [filterDateEl, filterTimeEl, qEl].forEach(el => el.addEventListener("input", render));
+
+    $("resetForm").addEventListener("click", () => {
+      resetForm();
+      toast("Temizlendi", "Form alanları sıfırlandı.");
+    });
+
+    $("clearFilters").addEventListener("click", () => {
+      filterDateEl.value = "";
+      filterTimeEl.value = "";
+      qEl.value = "";
+      render();
+      toast("Filtreler temizlendi", "Tüm rezervasyonlar listeleniyor.");
+    });
+
+    $("openAdmin").addEventListener("click", openAdmin);
+    $("closeAdmin").addEventListener("click", closeAdmin);
+    modalOverlay.addEventListener("click", (e)=>{
+      if(e.target === modalOverlay) closeAdmin();
+    });
+
+    $("saveCap").addEventListener("click", ()=>{
+      const v = Number(capInput.value);
+      if(!Number.isFinite(v) || v < 1){
+        toast("Hata", "Kapasite 1 veya daha büyük olmalı.");
+        return;
+      }
+      saveCapacity(Math.floor(v));
+      closeAdmin();
+      render();
+      toast("Kaydedildi", `Yeni kapasite: ${Math.floor(v)}`);
+    });
+
+    $("deleteAll").addEventListener("click", ()=>{
+      const ok = confirm("Tüm rezervasyonları silmek istiyor musun? Bu işlem geri alınamaz.");
+      if(!ok) return;
+      saveReservations([]);
+      closeAdmin();
+      render();
+      toast("Silindi", "Tüm rezervasyonlar temizlendi.");
+    });
+
+    $("exportBtn").addEventListener("click", ()=>{
+      const data = loadReservations();
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "rezervasyonlar.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast("Dışa aktarıldı", "rezervasyonlar.json indirildi.");
+    });
+
+    // Form submit
+    form.addEventListener("submit", (e)=>{
+      e.preventDefault();
+
+      const name = nameEl.value.trim();
+      const phone = phoneEl.value.trim();
+      const date = dateEl.value;
+      const time = timeEl.value;
+      const people = Number(peopleEl.value);
+      const note = noteEl.value.trim();
+
+      if(!name || !date || !time || !Number.isFinite(people) || people < 1){
+        toast("Hata", "Lütfen ad/tarih/saat/kişi alanlarını doğru doldur.");
+        return;
+      }
+
+      const reservations = loadReservations();
+      const cap = loadCapacity();
+
+      const isEditing = form.dataset.editing === "1";
+      const editId = form.dataset.editId || null;
+
+      const already = sumPeopleSameSlot(reservations, date, time, isEditing ? editId : null);
+      const remaining = cap - already;
+
+      if(people > remaining){
+        toast("Kapasite dolu", `${formatDateTR(date)} ${time} için kalan kapasite ${remaining}.`);
+        return;
+      }
+
+      if(isEditing){
+        const idx = reservations.findIndex(r => r.id === editId);
+        if(idx === -1){
+          toast("Hata", "Düzenlenecek kayıt bulunamadı.");
+          form.dataset.editing = "";
+          form.dataset.editId = "";
+          render();
+          return;
+        }
+        reservations[idx] = { ...reservations[idx], name, phone, date, time, people, note };
+        saveReservations(reservations);
+        form.dataset.editing = "";
+        form.dataset.editId = "";
+        setSubmitText("");
+        toast("Güncellendi", "Rezervasyon güncellendi.");
+      }else{
+        reservations.push({ id: safeId(), name, phone, date, time, people, note, createdAt: Date.now() });
+        saveReservations(reservations);
+        toast("Kaydedildi", "Rezervasyon eklendi.");
+      }
+
+      render();
+      resetForm();
+    });
+
+    // List actions (edit/delete)
+    listEl.addEventListener("click", (e)=>{
+      const btn = e.target.closest("button[data-act]");
+      if(!btn) return;
+
+      const act = btn.dataset.act;
+      const id = btn.dataset.id;
+      const reservations = loadReservations();
+      const r = reservations.find(x => x.id === id);
+      if(!r){
+        toast("Hata", "Kayıt bulunamadı.");
+        return;
+      }
+
+      if(act === "del"){
+        const ok = confirm(`${r.name} adlı rezervasyonu silmek istiyor musun?`);
+        if(!ok) return;
+        const next = reservations.filter(x => x.id !== id);
+        saveReservations(next);
+        render();
+        toast("Silindi", "Rezervasyon kaldırıldı.");
+      }
+
+      if(act === "edit"){
+        nameEl.value = r.name || "";
+        phoneEl.value = r.phone || "";
+        dateEl.value = r.date || todayISO();
+        timeEl.value = r.time || (timeEl.options[0]?.value || "");
+        peopleEl.value = String(r.people ?? 2);
+        noteEl.value = r.note || "";
+
+        form.dataset.editing = "1";
+        form.dataset.editId = r.id;
+        setSubmitText("✏️ Düzenleme modundasın. Kaydet'e basınca rezervasyon güncellenir.");
+        updateCapacityHint();
+        toast("Düzenleme", "Form dolduruldu. Güncellemek için Kaydet.");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+
+    // Init
+    updateCapacityUI();
+    render();
+    resetForm();
+
+    // ESC closes modal
+    window.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape" && modalOverlay.style.display === "flex") closeAdmin();
+    });
+  </script>
+</body>
+</html>
